@@ -3,15 +3,12 @@ import matplotlib.pyplot as plt
 import seaborn as sns
 import matplotlib
 import os
-matplotlib.use('TkAgg') # Grafik penceresinin açılması için ana backend
+matplotlib.use('TkAgg') # Grafik penceresinin açılması için 
 
-# --- Dosya Yolu ---
-# Dosyanızın tam yolu yerine sadece adını kullanıyoruz,
-# bu da Python betiği ve CSV dosyasının aynı klasörde olması gerektiğini varsayar.
 file_path = "dam_data.csv"
 
 try:
-    # 1. Veriyi Oku
+    # Veriyi Oku
     print(f"'{file_path}' dosyasını okumaya çalışıyorum...")
     df = pd.read_csv(file_path)
     print("Veri başarıyla okundu. İlk 3 satır:")
@@ -19,24 +16,21 @@ try:
     print("\nSütun isimleri:")
     print(df.columns.tolist())
 
-    # 2. 'Tarih' Sütununu Doğru Formata Çevir ve Sırala
-    # Tarih sütununuz '2000-10-23T00:00:00' formatında olduğundan emin olalım.
+    # Tarih Sütununu Doğru Formata Çevir ve Sırala
     if 'Tarih' in df.columns:
         print("\n'Tarih' sütunu bulundu. Dönüştürülüyor...")
         df['Tarih'] = pd.to_datetime(df['Tarih'], errors='coerce') # Hatalı tarihleri NaN yapar
-        df.dropna(subset=['Tarih'], inplace=True) # NaN olan tarih satırlarını kaldırırız
+        df.dropna(subset=['Tarih'], inplace=True) # NaN olan tarih satırlarını kaldır
         df.sort_values('Tarih', inplace=True)
         print("Tarih sütunu dönüştürüldü ve sıralandı.")
     else:
         raise ValueError("Hata: 'Tarih' adında bir sütun bulunamadı. Lütfen CSV başlıklarını kontrol edin.")
 
-    # 3. Baraj Sütunlarını Belirle
-    # Genellikle ilk sütun (_id) ve ikinci sütun (Tarih) dışındaki diğerleri baraj isimleridir.
-    # Bu kısmı daha güvenli hale getirelim, manuel olarak da belirtebiliriz.
+    # Baraj Sütunları Belirle
     baraj_sutunlari = ['Omerli', 'Darlik', 'Elmali', 'Terkos', 'Alibey',
                        'Buyukcekmece', 'Sazlidere', 'Kazandere', 'Pabucdere', 'Istrancalar']
 
-    # Gerçekten veri setinizde bu sütunların var olup olmadığını kontrol edelim.
+    # Veri setinizde bu sütunların var olup olmadığını kontrol.
     mevcut_baraj_sutunlari = [col for col in baraj_sutunlari if col in df.columns]
     if not mevcut_baraj_sutunlari:
         raise ValueError("Hata: Belirtilen baraj sütunlarından hiçbiri veri setinde bulunamadı. Lütfen sütun isimlerini kontrol edin.")
@@ -48,12 +42,12 @@ try:
         df[col] = pd.to_numeric(df[col], errors='coerce')
     df.dropna(subset=mevcut_baraj_sutunlari, inplace=True) # Sayısal olmayan veya eksik değerleri içeren satırları at
 
-    # Veri kontrolü: Temizlenmiş veri setinde kaç satır kaldı?
+    # Veri kontrolü
     print(f"Veri temizleme sonrası kalan satır sayısı: {len(df)}")
     if len(df) == 0:
         raise ValueError("Hata: Veri temizleme sonrası grafiği çizecek yeterli veri kalmadı. Veri setinizi kontrol edin.")
 
-    # 4. Veriyi Grafiğe Hazırla (Pandas melt fonksiyonu ile uzun formata dönüştür)
+    # Veriyi Grafiğe Hazırla 
     df_melted = df.melt(id_vars=['Tarih'], value_vars=mevcut_baraj_sutunlari,
                         var_name='Baraj', value_name='Doluluk Oranı')
     
@@ -61,12 +55,12 @@ try:
     print(df_melted.head(3))
 
 
-    # 5. Grafiği Çiz
+    # Grafiği Çiz
     print("\nGrafik oluşturuluyor...")
     plt.figure(figsize=(16, 8)) # Geniş ekranlar için daha uygun boyut
     sns.lineplot(x='Tarih', y='Doluluk Oranı', hue='Baraj', data=df_melted)
 
-    # 6. Grafik Başlık ve Etiketleri
+    # Grafik Başlık ve Etiketleri
     plt.title('İstanbul Barajları Günlük Doluluk Oranları Zaman Serisi', fontsize=20, pad=20)
     plt.xlabel('Tarih', fontsize=14)
     plt.ylabel('Doluluk Oranı (%)', fontsize=14)
@@ -75,7 +69,7 @@ try:
     plt.legend(title='Barajlar', bbox_to_anchor=(1.01, 1), loc='upper left', borderaxespad=0, fontsize=9, title_fontsize=11)
     plt.grid(True, linestyle='--', alpha=0.7)
 
-    # 7. Grafiği Göster
+    # Grafiği Göster
     plt.tight_layout(rect=[0, 0, 0.98, 1]) # Lejantın dışarıda kalması için düzenleme
     print("Grafik gösteriliyor...")
     plt.show()
